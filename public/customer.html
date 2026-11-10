@@ -1,196 +1,308 @@
 
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FAST RECHARGE Customer</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;padding:16px;background:#eef2f7;font-family:Arial,sans-serif;color:#172033}
-main{max-width:520px;margin:auto}
-header{background:#123c78;color:white;text-align:center;padding:22px;border-radius:14px}
-.card{background:white;padding:16px;margin-top:14px;border-radius:12px;box-shadow:0 2px 8px #0001}
-input,select,button{width:100%;padding:12px;margin:7px 0;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
-button{background:#1769d2;color:white;border:0;font-weight:bold}
-.hidden{display:none}
-.package,.order{border:1px solid #dbe3ee;padding:12px;border-radius:9px;margin:9px 0}
-#message{display:none;padding:12px;margin-top:12px;border-radius:8px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAST RECHARGE Customer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #eef2f7;
+      font-family: Arial, sans-serif;
+      color: #172033;
+    }
+    main { max-width: 520px; margin: auto; }
+    header {
+      background: #123c78;
+      color: white;
+      text-align: center;
+      padding: 22px;
+      border-radius: 14px;
+    }
+    .card {
+      background: white;
+      padding: 16px;
+      margin-top: 14px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0001;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    button {
+      background: #1769d2;
+      color: white;
+      border: 0;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.secondary { background: #475569; }
+    .hidden { display: none; }
+    .order {
+      border: 1px solid #dbe3ee;
+      padding: 12px;
+      border-radius: 9px;
+      margin: 9px 0;
+    }
+    #message {
+      display: none;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 8px;
+      background: #e0f2fe;
+    }
+  </style>
 </head>
 <body>
 <main>
-<header>
-<h1>FAST RECHARGE</h1>
-<p>Customer Recharge App</p>
-</header>
+  <header>
+    <h1>FAST RECHARGE</h1>
+    <p>Customer Recharge App</p>
+  </header>
 
-<div class="card" id="authCard">
-<h2>নতুন অ্যাকাউন্ট খুলুন</h2>
-<input id="signupName" placeholder="আপনার নাম">
-<input id="signupPhone" placeholder="মোবাইল নম্বর">
-<input id="signupPassword" type="password" placeholder="পাসওয়ার্ড">
-<button id="signupBtn">সাইন আপ</button>
-<hr>
-<h2>লগইন করুন</h2>
-<input id="loginPhone" placeholder="মোবাইল নম্বর">
-<input id="loginPassword" type="password" placeholder="পাসওয়ার্ড">
-<button id="loginBtn">লগইন</button>
-</div>
+  <div class="card" id="authCard">
+    <h2>নতুন অ্যাকাউন্ট খুলুন</h2>
+    <input id="signupName" placeholder="আপনার নাম">
+    <input id="signupPhone" placeholder="মোবাইল নম্বর">
+    <input id="signupPassword" type="password" placeholder="পাসওয়ার্ড">
+    <button id="signupBtn">সাইন আপ</button>
 
-<div id="appArea" class="hidden">
-<div class="card">
-স্বাগতম, <b id="customerName"></b>
-<button id="logoutBtn">লগআউট</button>
-</div>
+    <hr>
 
-<div class="card">
-<h2>রিচার্জ প্যাকেজ</h2>
-<div id="packageList">প্যাকেজ লোড হচ্ছে...</div>
-</div>
+    <h2>লগইন করুন</h2>
+    <input id="loginPhone" placeholder="মোবাইল নম্বর">
+    <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড">
+    <button id="loginBtn">লগইন</button>
+  </div>
 
-<div class="card">
-<h2>নতুন অর্ডার</h2>
-<form id="orderForm">
-<select id="packageSelect" required>
-<option value="">প্যাকেজ নির্বাচন করুন</option>
-</select>
-<input id="imoId" placeholder="আপনার IMO ID" required>
-<button type="submit">অর্ডার জমা দিন</button>
-</form>
-</div>
+  <div id="appArea" class="hidden">
+    <div class="card">
+      স্বাগতম, <b id="customerName"></b>
+      <button class="secondary" id="logoutBtn">লগআউট</button>
+    </div>
 
-<div class="card">
-<h2>আমার অর্ডার</h2>
-<button type="button" id="refreshBtn">অর্ডার আপডেট দেখুন</button>
-<div id="orderHistory">এখনো কোনো অর্ডার নেই।</div>
-</div>
-</div>
+    <div class="card">
+      <h2>রিচার্জ প্যাকেজ</h2>
+      <div id="packageList">প্যাকেজ লোড হচ্ছে...</div>
+    </div>
 
-<div id="message"></div>
+    <div class="card">
+      <h2>রিচার্জ অর্ডার</h2>
+      <form id="orderForm">
+        <select id="packageSelect" required>
+          <option value="">প্যাকেজ নির্বাচন করুন</option>
+        </select>
+        <input id="imoId" placeholder="আপনার IMO ID" required>
+        <button type="submit">অর্ডার জমা দিন</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>আমার অর্ডার</h2>
+      <button class="secondary" type="button" id="refreshBtn">
+        অর্ডার আপডেট দেখুন
+      </button>
+      <div id="orderHistory">এখনো কোনো অর্ডার নেই।</div>
+    </div>
+  </div>
+
+  <div id="message"></div>
 </main>
 
 <script>
-const get=id=>document.getElementById(id);
-let token=localStorage.getItem("fast_customer_token")||"";
+const get = id => document.getElementById(id);
 
-function showMessage(text,error=false){
- const box=get("message");
- box.textContent=text;
- box.style.display="block";
- box.style.background=error?"#fee2e2":"#dcfce7";
- box.style.color=error?"#991b1b":"#166534";
+let token = localStorage.getItem("fast_customer_token") || "";
+let customer = null;
+
+function showMessage(text, error = false) {
+  const box = get("message");
+  box.textContent = text;
+  box.style.display = "block";
+  box.style.background = error ? "#fee2e2" : "#dcfce7";
 }
 
-async function api(path,options={}){
- const headers={"Content-Type":"application/json"};
- if(token) headers.Authorization="Bearer "+token;
- const response=await fetch(path,{...options,headers:{...headers,...(options.headers||{})}});
- const data=await response.json().catch(()=>({}));
- if(!response.ok) throw new Error(data.error||"সমস্যা হয়েছে");
- return data;
-}
+async function api(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
 
-function showApp(user){
- get("authCard").classList.add("hidden");
- get("appArea").classList.remove("hidden");
- get("customerName").textContent=user.name||"Customer";
- loadPackages();
- loadOrders();
-}
+  if (token) headers.Authorization = "Bearer " + token;
 
-get("signupBtn").onclick=async()=>{
- const name=get("signupName").value.trim();
- const phone=get("signupPhone").value.trim();
- const password=get("signupPassword").value;
- if(!name||!phone||!password) return showMessage("সব তথ্য পূরণ করুন।",true);
- try{
-  const data=await api("/api/customer/signup",{method:"POST",body:JSON.stringify({name,phone,password})});
-  token=data.token;
-  localStorage.setItem("fast_customer_token",token);
-  showApp(data.user);
-  showMessage("অ্যাকাউন্ট তৈরি হয়েছে।");
- }catch(e){showMessage(e.message,true);}
-};
-
-get("loginBtn").onclick=async()=>{
- const phone=get("loginPhone").value.trim();
- const password=get("loginPassword").value;
- if(!phone||!password) return showMessage("মোবাইল নম্বর ও পাসওয়ার্ড দিন।",true);
- try{
-  const data=await api("/api/customer/login",{method:"POST",body:JSON.stringify({phone,password})});
-  token=data.token;
-  localStorage.setItem("fast_customer_token",token);
-  showApp(data.user);
-  showMessage("লগইন সফল হয়েছে।");
- }catch(e){showMessage(e.message,true);}
-};
-
-async function loadPackages(){
- try{
-  const data=await api("/api/packages");
-  const packages=Array.isArray(data)?data:(data.packages||[]);
-  get("packageList").innerHTML="";
-  get("packageSelect").innerHTML='<option value="">প্যাকেজ নির্বাচন করুন</option>';
-  if(!packages.length){get("packageList").textContent="এখনো কোনো প্যাকেজ নেই।";return;}
-  packages.forEach(p=>{
-   const name=p.name||p.title||"Recharge Package";
-   const div=document.createElement("div");
-   div.className="package";
-   div.textContent=name+" — মূল্য: ৳"+(p.price??0);
-   get("packageList").appendChild(div);
-   const option=document.createElement("option");
-   option.value=p.id;
-   option.textContent=name+" — ৳"+(p.price??0);
-   get("packageSelect").appendChild(option);
+  const response = await fetch(path, {
+    ...options,
+    headers
   });
- }catch(e){get("packageList").textContent=e.message;}
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || "অনুরোধ সম্পন্ন হয়নি");
+  }
+
+  return data;
 }
 
-get("orderForm").onsubmit=async event=>{
- event.preventDefault();
- const packageId=get("packageSelect").value;
- const imoId=get("imoId").value.trim();
- if(!packageId||!imoId) return showMessage("প্যাকেজ ও IMO ID দিন।",true);
- try{
-  await api("/api/orders",{method:"POST",body:JSON.stringify({packageId:Number(packageId),imoId})});
-  showMessage("আপনার অর্ডার জমা হয়েছে।");
-  get("orderForm").reset();
+function showApp(name) {
+  get("authCard").classList.add("hidden");
+  get("appArea").classList.remove("hidden");
+  get("customerName").textContent = name || "Customer";
+  loadPackages();
   loadOrders();
- }catch(e){showMessage(e.message,true);}
-};
-
-async function loadOrders(){
- try{
-  const data=await api("/api/orders/mine");
-  const orders=Array.isArray(data)?data:(data.orders||[]);
-  const box=get("orderHistory");
-  box.innerHTML="";
-  if(!orders.length){box.textContent="এখনো কোনো অর্ডার নেই।";return;}
-  orders.forEach(order=>{
-   const div=document.createElement("div");
-   div.className="order";
-   div.textContent=(order.package_name||order.packageName||"Recharge")+
-    " | IMO ID: "+(order.imo_id||order.imoId||"-")+
-    " | স্ট্যাটাস: "+(order.status||"Pending");
-   box.appendChild(div);
-  });
- }catch(e){get("orderHistory").textContent=e.message;}
 }
 
-get("refreshBtn").onclick=loadOrders;
+get("signupBtn").addEventListener("click", async () => {
+  const name = get("signupName").value.trim();
+  const phone = get("signupPhone").value.trim();
+  const password = get("signupPassword").value;
 
-get("logoutBtn").onclick=()=>{
- token="";
- localStorage.removeItem("fast_customer_token");
- get("appArea").classList.add("hidden");
- get("authCard").classList.remove("hidden");
- showMessage("লগআউট হয়েছে।");
-};
+  if (!name || !phone || !password) {
+    return showMessage("সব তথ্য পূরণ করুন।", true);
+  }
 
-if(token){
- api("/api/customer/me").then(data=>showApp(data.user||data))
- .catch(()=>{token="";localStorage.removeItem("fast_customer_token");});
+  try {
+    const data = await api("/api/customer/signup", {
+      method: "POST",
+      body: JSON.stringify({ name, phone, password })
+    });
+
+    showMessage(data.message || "অ্যাকাউন্ট তৈরি হয়েছে। এখন লগইন করুন।");
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+});
+
+get("loginBtn").addEventListener("click", async () => {
+  const phone = get("loginPhone").value.trim();
+  const password = get("loginPassword").value;
+
+  if (!phone || !password) {
+    return showMessage("মোবাইল নম্বর ও পাসওয়ার্ড দিন।", true);
+  }
+
+  try {
+    const data = await api("/api/customer/login", {
+      method: "POST",
+      body: JSON.stringify({ phone, password })
+    });
+
+    token = data.token;
+    customer = data.customer || {};
+    localStorage.setItem("fast_customer_token", token);
+    showApp(customer.name);
+    showMessage("লগইন সফল হয়েছে।");
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+});
+
+async function loadPackages() {
+  try {
+    const data = await api("/api/packages");
+    const packages = data.packages || data;
+
+    get("packageList").innerHTML = "";
+    get("packageSelect").innerHTML =
+      '<option value="">প্যাকেজ নির্বাচন করুন</option>';
+
+    packages.forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = `${item.name} - ${item.price} টাকা`;
+      get("packageSelect").appendChild(option);
+
+      const div = document.createElement("div");
+      div.className = "order";
+      div.textContent = `${item.name} — ${item.price} টাকা`;
+      get("packageList").appendChild(div);
+    });
+  } catch (error) {
+    get("packageList").textContent =
+      "প্যাকেজ লোড করা যায়নি। সার্ভার সংযোগ পরীক্ষা করতে হবে।";
+  }
+}
+
+get("orderForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const packageId = get("packageSelect").value;
+  const imoId = get("imoId").value.trim();
+
+  if (!packageId || !imoId) {
+    return showMessage("প্যাকেজ ও IMO ID দিন।", true);
+  }
+
+  try {
+    const data = await api("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({ packageId, imoId })
+    });
+
+    showMessage(data.message || "অর্ডার জমা হয়েছে।");
+    get("orderForm").reset();
+    loadOrders();
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+});
+
+async function loadOrders() {
+  try {
+    const data = await api("/api/orders");
+    const orders = data.orders || data;
+    const history = get("orderHistory");
+
+    history.innerHTML = "";
+
+    if (!orders.length) {
+      history.textContent = "এখনো কোনো অর্ডার নেই।";
+      return;
+    }
+
+    orders.forEach(order => {
+      const div = document.createElement("div");
+      div.className = "order";
+      div.textContent =
+        `অর্ডার: ${order.id} | প্যাকেজ: ${order.packageName || order.packageId} | স্ট্যাটাস: ${order.status}`;
+      history.appendChild(div);
+    });
+  } catch (error) {
+    get("orderHistory").textContent =
+      "অর্ডার দেখা যাচ্ছে না। সার্ভার সংযোগ পরীক্ষা করতে হবে।";
+  }
+}
+
+get("refreshBtn").addEventListener("click", loadOrders);
+
+get("logoutBtn").addEventListener("click", () => {
+  token = "";
+  customer = null;
+  localStorage.removeItem("fast_customer_token");
+  get("appArea").classList.add("hidden");
+  get("authCard").classList.remove("hidden");
+  showMessage("লগআউট হয়েছে।");
+});
+
+if (token) {
+  api("/api/customer/me")
+    .then(data => {
+      customer = data.customer || data;
+      showApp(customer.name);
+    })
+    .catch(() => {
+      token = "";
+      localStorage.removeItem("fast_customer_token");
+    });
 }
 </script>
 </body>
