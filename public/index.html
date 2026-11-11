@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAST RECHARGE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;padding:18px}
+main{max-width:480px;margin:auto}
+h1{text-align:center;color:#35e0a1}
+.card{background:#1d2a3d;padding:16px;border-radius:14px;margin:14px 0}
+input,button,select{width:100%;padding:13px;margin:7px 0;border:0;border-radius:8px;font-size:16px}
+input,select{background:#fff;color:#111}
+button{background:#18bd83;color:#fff;font-weight:bold}
+.package{border:1px solid #35e0a1;padding:12px;border-radius:9px;margin:8px 0;cursor:pointer}
+.small{color:#c5d2e2;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>FAST RECHARGE</h1>
+<p style="text-align:center">Diamond Recharge Customer App</p>
+
+<div class="card" id="auth">
+<h3>Customer Login / Signup</h3>
+<input id="name" placeholder="আপনার নাম">
+<input id="email" placeholder="মোবাইল বা ইমেইল">
+<input id="password" type="password" placeholder="পাসওয়ার্ড">
+<button onclick="signup()">নতুন অ্যাকাউন্ট খুলুন</button>
+<button onclick="login()">লগইন করুন</button>
+<p id="authMsg" class="small"></p>
+</div>
+
+<div class="card" id="shop" hidden>
+<h3>ডায়মন্ড প্যাকেজ</h3>
+<div id="packages">লোড হচ্ছে...</div>
+<input id="imo" placeholder="আপনার IMO ID">
+<button onclick="orderNow()">অর্ডার তৈরি করুন</button>
+<p id="orderMsg"></p>
+</div>
+
+<div class="card" id="payment" hidden>
+<h3>অর্ডার তথ্য</h3>
+<p id="orderInfo"></p>
+<p>পেমেন্ট নম্বর: <b id="bkash"></b></p>
+<input id="trx" placeholder="Transaction ID (পরীক্ষামূলক)">
+<button onclick="sendTrx()">Transaction ID জমা দিন</button>
+<p id="trxMsg" class="small"></p>
+</div>
+
+<div class="card" id="history" hidden>
+<h3>আমার অর্ডার</h3>
+<button onclick="loadOrders()">অর্ডার দেখুন</button>
+<div id="orders"></div>
+</div>
+
+<p class="small">পরীক্ষামূলক সংস্করণ। বাস্তব পেমেন্টের আগে অভিভাবক/দায়িত্বশীল প্রাপ্তবয়স্কের সহায়তা নিন।</p>
+</main>
+
+<script>
+const API = location.origin;
+let token = localStorage.getItem("fastToken") || "";
+let selectedPackage = "";
+let currentOrder = "";
+
+async function request(url, options={}) {
+  const headers = {"Content-Type":"application/json",...(options.headers||{})};
+  if(token) headers.Authorization = "Bearer " + token;
+  const res = await fetch(API+url,{...options,headers});
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.message || "সমস্যা হয়েছে");
+  return data;
+}
+
+async function signup(){
+  try{
+    const d=await request("/api/customer/signup",{method:"POST",body:JSON.stringify({
+      name:document.getElementById("name").value,
+      email:document.getElementById("email").value,
+      password:document.getElementById("password").value
+    })});
+    document.getElementById("authMsg").textContent=d.message || "Signup সফল";
+  }catch(e){document.getElementById("authMsg").textContent=e.message}
+}
+
+async function login(){
+  try{
+    const d=await request("/api/customer/login",{method:"POST",body:JSON.stringify({
+      email:document.getElementById("email").value,
+      password:document.getElementById("password").value
+    })});
+    token=d.token;
+    localStorage.setItem("fastToken",token);
+    document.getElementById("auth").hidden=true;
+    document.getElementById("shop").hidden=false;
+    document.getElementById("history").hidden=false;
+    loadPackages();
+  }catch(e){document.getElementById("authMsg").textContent=e.message}
+}
+
+async function loadPackages(){
+  try{
+    const d=await request("/api/packages");
+    document.getElementById("packages").innerHTML=d.packages.map(p=>
+      `<div class="package" onclick="choose('${p.id}',this)">
+      <b>${p.name}</b><br>ডায়মন্ড: ${p.diamonds}<br>মূল্য: ${p.price}
+      </div>`).join("");
+  }catch(e){document.getElementById("packages").textContent=e.message}
+}
+
+function choose(id,el){
+  selectedPackage=id;
+  document.querySelectorAll(".package").forEach(x=>x.style.background="");
+  el.style.background="#24523f";
+}
+
+async function orderNow(){
+  try{
+    if(!selectedPackage) throw new Error("একটি প্যাকেজ নির্বাচন করুন");
+    const imoId=document.getElementById("imo").value.trim();
+    if(!imoId) throw new Error("IMO ID লিখুন");
+    const d=await request("/api/orders",{method:"POST",body:JSON.stringify({
+      packageId:selectedPackage,imoId
+    })});
+    currentOrder=d.order.id;
+    document.getElementById("orderInfo").textContent="Order ID: "+currentOrder;
+    const s=await request("/api/settings");
+    document.getElementById("bkash").textContent=s.bkashNumber || "নম্বর সেট করা হয়নি";
+    document.getElementById("payment").hidden=false;
+    document.getElementById("orderMsg").textContent="অর্ডার তৈরি হয়েছে";
+  }catch(e){document.getElementById("orderMsg").textContent=e.message}
+}
+
+async function sendTrx(){
+  try{
+    const transactionId=document.getElementById("trx").value.trim();
+    if(!transactionId) throw new Error("Transaction ID লিখুন");
+    await request("/api/orders/"+currentOrder+"/transaction",{
+      method:"POST",body:JSON.stringify({transactionId})
+    });
+    document.getElementById("trxMsg").textContent="তথ্য জমা হয়েছে";
+  }catch(e){document.getElementById("trxMsg").textContent=e.message}
+}
+
+async function loadOrders(){
+  try{
+    const d=await request("/api/orders");
+    document.getElementById("orders").innerHTML=d.orders.map(o=>
+      `<div class="package">Order: ${o.id}<br>Status: ${o.status || "Pending"}</div>`
+    ).join("") || "কোনো অর্ডার নেই";
+  }catch(e){document.getElementById("orders").textContent=e.message}
+}
+
+if(token){
+  document.getElementById("auth").hidden=true;
+  document.getElementById("shop").hidden=false;
+  document.getElementById("history").hidden=false;
+  loadPackages();
+}
+</script>
+</body>
+</html>
