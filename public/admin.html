@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAST RECHARGE Admin</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#eef2f7;font-family:Arial;color:#172033}
+main{max-width:600px;margin:auto}
+header,.card{background:white;padding:18px;margin-bottom:14px;border-radius:12px}
+header{background:#123c78;color:white;text-align:center}
+input,button{width:100%;padding:13px;margin:7px 0;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+button{background:#1769d2;color:white;border:0;font-weight:bold}
+.hidden{display:none}
+.order{padding:12px;border:1px solid #dbe3ee;border-radius:9px;margin:10px 0}
+#message{padding:12px;background:#e0f2fe;border-radius:8px;margin:10px 0}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>FAST RECHARGE</h1>
+<p>ADMIN PANEL</p>
+</header>
+
+<div class="card" id="loginBox">
+<h2>অ্যাডমিন লগইন</h2>
+<input id="username" placeholder="Admin Username">
+<input id="password" type="password" placeholder="Admin Password">
+<button onclick="login()">লগইন</button>
+</div>
+
+<div id="panel" class="hidden">
+<div class="card">
+<h2>অ্যাডমিন ড্যাশবোর্ড</h2>
+<button onclick="loadOrders()">অর্ডার আপডেট করুন</button>
+<button onclick="logout()">লগআউট</button>
+</div>
+
+<div class="card">
+<h2>অর্ডার তালিকা</h2>
+<div id="orders">অর্ডার লোড হয়নি।</div>
+</div>
+
+<div class="card">
+<h2>সেটিংস</h2>
+<input id="bkash" placeholder="বিকাশ পেমেন্ট নম্বর">
+<button onclick="saveSettings()">সেভ করুন</button>
+</div>
+</div>
+
+<div id="message"></div>
+</main>
+
+<script>
+let adminToken = localStorage.getItem("fast_admin_token") || "";
+
+function msg(text){
+ document.getElementById("message").textContent=text;
+}
+
+async function api(url,options={}){
+ const response=await fetch(url,{
+  ...options,
+  headers:{
+   "Content-Type":"application/json",
+   "Authorization":"Bearer "+adminToken,
+   ...(options.headers||{})
+  }
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok) throw new Error(data.message||"অনুরোধ ব্যর্থ হয়েছে");
+ return data;
+}
+
+async function login(){
+ try{
+  const data=await api("/api/admin/login",{
+   method:"POST",
+   body:JSON.stringify({
+    username:document.getElementById("username").value,
+    password:document.getElementById("password").value
+   })
+  });
+  adminToken=data.token;
+  localStorage.setItem("fast_admin_token",adminToken);
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+  msg("অ্যাডমিন লগইন সফল হয়েছে।");
+  loadOrders();
+ }catch(e){msg(e.message);}
+}
+
+async function loadOrders(){
+ try{
+  const data=await api("/api/admin/orders");
+  const box=document.getElementById("orders");
+  box.innerHTML="";
+  const orders=data.orders||[];
+  if(!orders.length){box.textContent="কোনো অর্ডার নেই।";return;}
+  orders.forEach(order=>{
+   const div=document.createElement("div");
+   div.className="order";
+   const title=document.createElement("b");
+   title.textContent=order.packageName||"Recharge Order";
+   const info=document.createElement("p");
+   info.textContent="অর্ডার: "+order.id+" | স্ট্যাটাস: "+order.status;
+   const target=document.createElement("p");
+   target.textContent="গ্রাহক ID: "+(order.customerId||"");
+   div.append(title,info,target);
+   if(order.status!=="Completed"){
+    const btn=document.createElement("button");
+    btn.textContent="সম্পন্ন হিসেবে চিহ্নিত করুন";
+    btn.onclick=()=>completeOrder(order.id);
+    div.appendChild(btn);
+   }
+   box.appendChild(div);
+  });
+ }catch(e){msg(e.message);}
+}
+
+async function completeOrder(id){
+ if(!confirm("পেমেন্ট ও রিচার্জ যাচাই করেছেন?"))return;
+ try{
+  await api("/api/admin/orders/"+encodeURIComponent(id)+"/complete",{
+   method:"POST"
+  });
+  msg("অর্ডার সম্পন্ন হয়েছে।");
+  loadOrders();
+ }catch(e){msg(e.message);}
+}
+
+async function saveSettings(){
+ try{
+  await api("/api/admin/settings",{
+   method:"POST",
+   body:JSON.stringify({
+    bkashNumber:document.getElementById("bkash").value.trim()
+   })
+  });
+  msg("সেটিংস সেভ হয়েছে।");
+ }catch(e){msg(e.message);}
+}
+
+function logout(){
+ localStorage.removeItem("fast_admin_token");
+ adminToken="";
+ location.reload();
+}
+
+if(adminToken){
+ document.getElementById("loginBox").classList.add("hidden");
+ document.getElementById("panel").classList.remove("hidden");
+ loadOrders();
+}
+</script>
+</body>
+</html>
